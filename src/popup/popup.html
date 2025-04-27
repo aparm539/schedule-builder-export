@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schedule Builder Export</title>
+    <link rel="stylesheet" href="../components/modal.css" />
+    <link rel="stylesheet" href="popup.css" />
+    <link rel="stylesheet" href="../settings/settings.css" />
+  </head>
+  <body>
+    <!-- Settings Modal -->
+    <main>
+      <div id="settings-modal" class="modal-overlay">
+        <div class="modal">
+          <div class="modal-header">
+            <h1>Export Settings</h1>
+          </div>
+
+          <div class="settings-section">
+            <h2>Google Calendar Account</h2>
+            <div class="account-info">
+              <div>
+                <strong>Current Account:</strong>
+                <span id="current-account">Not signed in</span>
+              </div>
+              <button id="change-account" class="secondary-button">
+                Change Account
+              </button>
+            </div>
+            <div class="calendar-selection">
+              <label for="calendar-select">Default Calendar:</label>
+              <select id="calendar-select"></select>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h2>Event Format</h2>
+            <div class="format-builder">
+              <div class="format-items">
+                <div class="available-components drag-container">
+                  <span
+                    class="component-item"
+                    draggable="true"
+                    data-type="courseCode"
+                    >Course Code
+                    <button class="cancel-item-btn">x</button>
+                  </span>
+                  <span
+                    class="component-item"
+                    draggable="true"
+                    data-type="section"
+                    >Section
+                    <button class="cancel-item-btn">x</button>
+                  </span>
+                  <span
+                    class="component-item"
+                    draggable="true"
+                    data-type="courseName"
+                    >Course Name
+                    <button class="cancel-item-btn">x</button>
+                  </span>
+                  <span
+                    class="component-item"
+                    draggable="true"
+                    data-type="separator"
+                    >-
+                    <button class="cancel-item-btn">x</button>
+                  </span>
+                  <span
+                    class="component-item"
+                    draggable="true"
+                    data-type="instructor"
+                    >Instructor
+                    <button class="cancel-item-btn">x</button>
+                  </span>
+                  <span
+                    class="component-item"
+                    draggable="true"
+                    data-type="newline"
+                    >↵ <button class="cancel-item-btn">x</button>
+                  </span>
+                </div>
+
+                <h3>Title Format</h3>
+                <div id="title-components" class="drag-container"></div>
+
+                <h3>Description Format</h3>
+                <div id="description-components" class="drag-container"></div>
+              </div>
+
+              <div class="preview-section">
+                <h3>Preview</h3>
+                <div class="event-preview">
+                  <div id="preview-title" class="preview-title"></div>
+                  <div
+                    id="preview-description"
+                    class="preview-description"
+                  ></div>
+                  <div id="preview-location" class="preview-location"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h2>Course Colors</h2>
+            <div id="course-colors" class="course-colors"></div>
+          </div>
+          <div class="status-container">
+            <div id="status-message"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button id="reset-defaults" class="secondary-button">
+              Reset to Defaults
+            </button>
+            <button id="cancel-export" class="secondary-button">Cancel</button>
+            <button id="confirm-export" class="primary-button">
+              Export Events
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Load scripts with type="module" -->
+    <script type="module" src="../settings/settings.js"></script>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

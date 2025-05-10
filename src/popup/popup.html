@@ -4,20 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Schedule Builder Export</title>
-    <link rel="stylesheet" href="../components/modal.css" />
     <link rel="stylesheet" href="popup.css" />
     <link rel="stylesheet" href="../settings/settings.css" />
   </head>
   <body>
-    <!-- Settings Modal -->
+    <!-- Popup Container -->
     <main>
-      <div id="settings-modal" class="modal-overlay">
-        <div class="modal">
-          <div class="modal-header">
+      <div id="popup-container" class="popup-overlay">
+        <div class="popup">
+          <div class="popup-header">
             <h1>Export Settings</h1>
           </div>
 
-          <div class="settings-section">
+          <div class="popup-section">
             <h2>Google Calendar Account</h2>
             <div class="account-info">
               <div>
@@ -34,7 +33,7 @@
             </div>
           </div>
 
-          <div class="settings-section">
+          <div class="popup-section">
             <h2>Event Format</h2>
             <div class="format-builder">
               <div class="format-items">
@@ -103,7 +102,7 @@
             </div>
           </div>
 
-          <div class="settings-section">
+          <div class="popup-section">
             <h2>Course Colors</h2>
             <div id="course-colors" class="course-colors"></div>
           </div>
@@ -111,7 +110,7 @@
             <div id="status-message"></div>
           </div>
 
-          <div class="modal-footer">
+          <div class="popup-footer">
             <button id="reset-defaults" class="secondary-button">
               Reset to Defaults
             </button>
@@ -124,7 +123,6 @@
       </div>
     </main>
 
-    <!-- Load scripts with type="module" -->
     <script type="module" src="../settings/settings.js"></script>
     <script type="module" src="popup.js"></script>
   </body>

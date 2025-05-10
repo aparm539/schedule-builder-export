@@ -1,5 +1,7 @@
 import { SettingsManager } from "../settings/settings.js";
 import { getCurrentTab } from "../utils/get-current-tab.js";
+import { MessageTypes } from "../utils/messageTypes.js";
+import { sendMessage } from "../utils/sendMessage.js";
 
 let currentTab = null;
 let settingsManager = null;
@@ -27,16 +29,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function handleConfirmExport() {
   try {
     showStatus("Exporting your schedule...", "loading");
-    const response = await chrome.runtime.sendMessage({
-      type: "SCHEDULE",
+    const response = await sendMessage({
+      type: MessageTypes.SCHEDULE,
     });
 
     if (!response.success) {
       throw new Error(response.error || "Failed to get schedule");
     }
-    const calendarResponse = await chrome.runtime.sendMessage({
-      type: "EXPORT_CALENDAR",
-      events: response.events,
+
+    const calendarResponse = await sendMessage({
+      type: MessageTypes.EXPORT_CALENDAR,
+      events: response.data,
     });
 
     if (!calendarResponse.success) {

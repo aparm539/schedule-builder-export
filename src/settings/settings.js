@@ -1,4 +1,6 @@
-// Event Format Builder
+import { MessageTypes } from "../utils/messageTypes.js";
+import { sendMessage } from "../utils/sendMessage.js";
+
 class EventFormatBuilder {
   constructor() {
     console.log("Initializing EventFormatBuilder");
@@ -7,8 +9,8 @@ class EventFormatBuilder {
       description: [],
     };
     this.defaultFormat = {
-      title: ["courseCode", "separator", "section", "separator", "courseName"],
-      description: ["courseName", "newline", "section"],
+      title: ["courseCode", "section", "courseName"],
+      description: ["courseName", "section"],
     };
   }
 
@@ -30,7 +32,14 @@ class EventFormatBuilder {
   }
 
   buildTitlePreview(courseData) {
-    return this.components.title
+    let title = this.components.title;
+    if (
+      this.components.title.length === 0 &&
+      this.components.description.length === 0
+    ) {
+      title = this.defaultFormat.title;
+    }
+    return title
       .map((component) => {
         switch (component) {
           case "courseCode":
@@ -39,12 +48,8 @@ class EventFormatBuilder {
             return courseData.section;
           case "courseName":
             return courseData.courseName;
-          case "separator":
-            return " - ";
           case "instructor":
             return courseData.instructor || "TBA";
-          case "newline":
-            return "\n";
           default:
             return "";
         }
@@ -62,12 +67,8 @@ class EventFormatBuilder {
             return courseData.section;
           case "courseName":
             return courseData.courseName;
-          case "separator":
-            return " - ";
           case "instructor":
             return courseData.instructor || "TBA";
-          case "newline":
-            return "\n";
           default:
             return "";
         }
@@ -90,7 +91,6 @@ class EventFormatBuilder {
   }
 }
 
-// Calendar Colors Manager
 class CalendarColorsManager {
   constructor() {
     console.log("Initializing CalendarColorsManager");
@@ -138,7 +138,6 @@ class CalendarColorsManager {
   }
 }
 
-// Settings Manager
 export class SettingsManager {
   constructor() {
     console.log("Initializing SettingsManager");
@@ -248,12 +247,14 @@ export class SettingsManager {
     }
 
     try {
-      const { success, token } = await chrome.runtime.sendMessage({
-        type: "GET_AUTH_TOKEN",
+      const { success, data, errorMessage } = await sendMessage({
+        type: MessageTypes.GET_AUTH_TOKEN,
       });
-      if (success && token) {
-        const calendars = await this.fetchCalendars(token);
+      if (success && data?.token) {
+        const calendars = await this.fetchCalendars(data.token);
         this.populateCalendarSelect(calendars);
+      } else if (errorMessage) {
+        console.error(errorMessage);
       }
     } catch (error) {
       console.error("Error setting up account info:", error);
@@ -297,6 +298,53 @@ export class SettingsManager {
       return;
     }
 
+    const titleComponents = this.formatBuilder.components.title;
+    const descriptionComponents = this.formatBuilder.components.description;
+
+    if (
+      this.formatBuilder.components.title.length === 0 &&
+      this.formatBuilder.components.description.length === 0
+    ) {
+      this.formatBuilder.setTitleComponents(
+        this.formatBuilder.defaultFormat.title
+      );
+      this.formatBuilder.setDescriptionComponents(
+        this.formatBuilder.defaultFormat.description
+      );
+    }
+    titleComponents.forEach((component) => {
+      const item = document.createElement("span");
+      item.className = "component-item";
+      item.draggable = true;
+      item.dataset.type = component;
+      item.textContent = this.getComponentDisplayName(component);
+      const cancelButton = document.createElement("button");
+      cancelButton.className = "cancel-item-btn";
+      cancelButton.textContent = "X";
+      cancelButton.addEventListener(
+        "click",
+        this.handleCancelBtnClick.bind(this)
+      );
+      item.appendChild(cancelButton);
+      titleContainer.appendChild(item);
+    });
+    descriptionComponents.forEach((component) => {
+      const item = document.createElement("span");
+      item.className = "component-item";
+      item.draggable = true;
+      item.dataset.type = component;
+      item.textContent = this.getComponentDisplayName(component);
+      const cancelButton = document.createElement("button");
+      cancelButton.className = "cancel-item-btn";
+      cancelButton.textContent = "X";
+      cancelButton.addEventListener(
+        "click",
+        this.handleCancelBtnClick.bind(this)
+      );
+      item.appendChild(cancelButton);
+      descContainer.appendChild(item);
+    });
+
     this.setupDragAndDrop();
     this.updatePreview();
   }
@@ -309,35 +357,31 @@ export class SettingsManager {
     }
 
     try {
-      const courses = await this.getCurrentCourses();
-      courseColors.innerHTML =
-        courses.length === 0
-          ? '<div class="no-courses">No courses found. Please open Schedule Builder to see your courses.</div>'
-          : "";
-
-      courses.forEach((course) => {
-        const colorItem = this.createCourseColorItem(course);
-        courseColors.appendChild(colorItem);
+      const { success, data, errorMessage } = await sendMessage({
+        type: MessageTypes.COURSES,
       });
+      console.log("Service worker response: ", { success, data, errorMessage });
+
+      if (success && data) {
+        courseColors.innerHTML =
+          data.length === 0
+            ? '<div class="no-courses">No courses found. Please open Schedule Builder to see your courses.</div>'
+            : "";
+
+        data.forEach((course) => {
+          const colorItem = this.createCourseColorItem(course);
+          courseColors.appendChild(colorItem);
+        });
+      } else if (errorMessage) {
+        console.error(errorMessage);
+        courseColors.innerHTML =
+          '<div class="error-message">Failed to load courses. Please try refreshing the page.</div>';
+      }
     } catch (error) {
       console.error("Error setting up course colors:", error);
       courseColors.innerHTML =
         '<div class="error-message">Failed to load courses. Please try refreshing the page.</div>';
     }
-  }
-
-  async getCurrentCourses() {
-    try {
-      const response = await chrome.runtime.sendMessage({ type: "COURSES" });
-      console.log("Service worker response: ", response);
-
-      if (response?.success && response.courses) {
-        return response.courses;
-      }
-    } catch (error) {
-      console.error("Failed to get courses from page:", error);
-    }
-    return [];
   }
 
   createCourseColorItem(course) {
@@ -430,6 +474,9 @@ export class SettingsManager {
     e.preventDefault();
     const componentType = e.dataTransfer.getData("text/plain");
     const container = e.currentTarget;
+    if (container.classList.contains("available-components")) {
+      return;
+    }
     container.classList.remove("drag-over");
 
     const component = document.createElement("span");
@@ -456,9 +503,7 @@ export class SettingsManager {
       courseCode: "Course Code",
       section: "Section",
       courseName: "Course Name",
-      separator: "-",
       instructor: "Instructor",
-      newline: "↵",
     };
     return names[type] || type;
   }
@@ -504,11 +549,13 @@ export class SettingsManager {
 
     if (changeAccount) {
       changeAccount.addEventListener("click", async () => {
-        const { success, token } = await chrome.runtime.sendMessage({
-          type: "GET_AUTH_TOKEN",
+        const { success, data, errorMessage } = await sendMessage({
+          type: MessageTypes.GET_AUTH_TOKEN,
         });
-        if (success && token) {
+        if (success && data?.token) {
           this.setupAccountInfo();
+        } else if (errorMessage) {
+          console.error(errorMessage);
         }
       });
     }
@@ -541,7 +588,7 @@ export class SettingsManager {
 }
 
 // Only initialize if we're on the settings page
-if (document.getElementById("settings-modal")) {
+if (document.getElementById("popup-container")) {
   const settingsManager = new SettingsManager();
   settingsManager.initialize();
 }

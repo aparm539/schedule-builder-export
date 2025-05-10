@@ -109,17 +109,14 @@ select {
   border: 2px dashed var(--border-color);
   border-radius: 4px;
   margin-bottom: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .drag-container.drag-over {
   border-color: var(--primary-color);
   background-color: var(--hover-color);
-}
-
-.available-components {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 
 .component-item {
@@ -218,8 +215,6 @@ button {
   background-color: var(--error-color);
   color: white;
 }
-
-/* Add these styles at the end of the file */
 
 .color-loading,
 .no-courses,

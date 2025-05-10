@@ -1,28 +1,45 @@
 {
   "manifest_version": 3,
-  "name": "Schedule Builder Export",
+  "name": "MRU Schedule Builder Export",
   "description": "This extension allows exporting from MRU Schedule Builder to Google Calendar.",
-  "version": "1.0",
+  "version": "1.0.0",
   "icons": {
-    "16": "icon16.png",
-    "48": "icon16.png",
-    "128": "icon128.png"
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
   },
   "content_scripts": [
     {
-      "matches": ["https://sb.mymru.ca/criteria.jsp*"],
-      "js": ["main.js"]
+      "matches": ["https://sb.mymru.ca/*"],
+      "run_at": "document_start",
+      "js": ["src/content/content-script.js"]
     }
   ],
-  "permissions": ["identity"],
+  "permissions": ["identity", "storage", "tabs", "identity.email"],
+  "host_permissions": ["https://sb.mymru.ca/*", "https://www.googleapis.com/*"],
   "oauth2": {
     "client_id": "",
     "scopes": [
       "https://www.googleapis.com/auth/calendar",
+      "https://www.googleapis.com/auth/calendar.readonly",
+      "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
       "https://www.googleapis.com/auth/directory.readonly"
     ]
-  }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; frame-ancestors 'none'"
+  },
+  "minimum_chrome_version": "88"
 }
